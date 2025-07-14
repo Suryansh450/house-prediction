@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bangalore Home Price Predictor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.2em;
+            font-weight: 700;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+            font-size: 1.1em;
+        }
+
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        input[type="number"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .predict-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.2em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .predict-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .predict-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .predict-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 10px;
+            display: none;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .result.success {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+        }
+
+        .result.error {
+            background: linear-gradient(45deg, #f44336, #da190b);
+            color: white;
+        }
+
+        .price-display {
+            font-size: 1.8em;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .details {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        @media (max-width: 600px) {
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+            
+            .container {
+                padding: 25px;
+            }
+            
+            h1 {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏠 Bangalore Home Price Predictor</h1>
+        
+        <form id="priceForm">
+            <div class="form-group">
+                <label for="total_sqft">Total Square Feet</label>
+                <input type="number" id="total_sqft" name="total_sqft" required min="500" max="10000" step="50" placeholder="e.g., 1200">
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="bhk">BHK</label>
+                    <select id="bhk" name="bhk" required>
+                        <option value="">Select BHK</option>
+                        <option value="1">1 BHK</option>
+                        <option value="2">2 BHK</option>
+                        <option value="3">3 BHK</option>
+                        <option value="4">4 BHK</option>
+                        <option value="5">5 BHK</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="bath">Bathrooms</label>
+                    <select id="bath" name="bath" required>
+                        <option value="">Select Bathrooms</option>
+                        <option value="1">1 Bathroom</option>
+                        <option value="2">2 Bathrooms</option>
+                        <option value="3">3 Bathrooms</option>
+                        <option value="4">4 Bathrooms</option>
+                        <option value="5">5 Bathrooms</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="location">Location</label>
+                <select id="location" name="location" required>
+                    <option value="">Select Location</option>
+                    {% for location in locations %}
+                    <option value="{{ location }}">{{ location }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <button type="submit" class="predict-btn">Predict Price</button>
+        </form>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Calculating price...</p>
+        </div>
+        
+        <div id="result" class="result">
+            <div class="price-display" id="priceDisplay"></div>
+            <div class="details" id="details"></div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('priceForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const loadingDiv = document.getElementById('loading');
+            const resultDiv = document.getElementById('result');
+            const submitBtn = document.querySelector('.predict-btn');
+            
+            // Show loading state
+            loadingDiv.style.display = 'block';
+            resultDiv.style.display = 'none';
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Predicting...';
+            
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                // Hide loading
+                loadingDiv.style.display = 'none';
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Predict Price';
+                
+                if (data.success) {
+                    // Show success result
+                    resultDiv.className = 'result success';
+                    document.getElementById('priceDisplay').innerHTML = `₹${data.price} Lakhs`;
+                    document.getElementById('details').innerHTML = `
+                        <strong>Property Details:</strong><br>
+                        Area: ${data.details.total_sqft} sq ft<br>
+                        BHK: ${data.details.bhk}<br>
+                        Bathrooms: ${data.details.bath}<br>
+                        Location: ${data.details.location}
+                    `;
+                } else {
+                    // Show error result
+                    resultDiv.className = 'result error';
+                    document.getElementById('priceDisplay').innerHTML = 'Prediction Failed';
+                    document.getElementById('details').innerHTML = `Error: ${data.error}`;
+                }
+                
+                resultDiv.style.display = 'block';
+                
+            } catch (error) {
+                // Hide loading and show error
+                loadingDiv.style.display = 'none';
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Predict Price';
+                
+                resultDiv.className = 'result error';
+                document.getElementById('priceDisplay').innerHTML = 'Connection Error';
+                document.getElementById('details').innerHTML = 'Please try again later.';
+                resultDiv.style.display = 'block';
+            }
+        });
+
+        // Add smooth scrolling to result when it appears
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.target.id === 'result' && mutation.target.style.display === 'block') {
+                    mutation.target.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            });
+        });
+
+        observer.observe(document.getElementById('result'), {
+            attributes: true,
+            attributeFilter: ['style']
+        });
+    </script>
+</body>
+</html>
